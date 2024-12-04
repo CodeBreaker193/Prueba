@@ -1,4 +1,3 @@
-import streamlit as st
 import tkinter as tk
 from tkinter import filedialog, ttk
 import pandas as pd
