@@ -1,0 +1,101 @@
+Producto,Cantidad Pedida,Cantidad Entregada,Fecha de Pedido,Fecha de Recepción,Stock Actual,Proveedor
+Abeto,61,33,2024-01-15,2024-01-23,4967,Dongguan Yuli Wood Industry
+Tornillo,30,11,2024-02-27,2024-03-01,4989,Shandong Liwei Ma Wood Industry
+Abeto,84,79,2024-01-24,2024-01-29,4888,Dongguan Yuli Wood Industry
+Nogal,33,7,2024-01-22,2024-01-27,4993,Chengdu Jiashijia Decorative New Material
+Roble,97,34,2024-02-07,2024-02-09,4966,Linyi Consmos Wood Industry
+Arce,69,25,2024-02-02,2024-02-08,4975,Chengdu Jiashijia Decorative New Material
+Tornillo,98,53,2024-01-27,2024-01-30,4936,Shandong Liwei Ma Wood Industry
+Nogal,64,56,2024-02-26,2024-02-29,4937,Chengdu Jiashijia Decorative New Material
+Tornillo,60,11,2024-01-21,2024-01-30,4925,Shandong Liwei Ma Wood Industry
+Abeto,27,8,2024-01-25,2024-01-27,4880,Dongguan Yuli Wood Industry
+Roble,18,14,2024-02-22,2024-02-24,4952,Linyi Consmos Wood Industry
+Nogal,69,11,2024-02-13,2024-02-21,4926,Chengdu Jiashijia Decorative New Material
+Abeto,44,18,2024-01-17,2024-01-21,4862,Dongguan Yuli Wood Industry
+Roble,13,6,2024-01-06,2024-01-12,4946,Linyi Consmos Wood Industry
+Roble,13,10,2024-01-29,2024-01-31,4936,Linyi Consmos Wood Industry
+Roble,53,38,2024-01-10,2024-01-14,4898,Linyi Consmos Wood Industry
+Cedro,57,19,2024-01-08,2024-01-15,4981,Linyi Consmos Wood Industry
+Nogal,71,44,2024-01-21,2024-01-23,4882,Chengdu Jiashijia Decorative New Material
+Abeto,62,28,2024-01-26,2024-02-04,4834,Dongguan Yuli Wood Industry
+Nogal,69,64,2024-02-14,2024-02-23,4818,Chengdu Jiashijia Decorative New Material
+Tornillo,24,17,2024-01-01,2024-01-10,4908,Shandong Liwei Ma Wood Industry
+Abeto,18,12,2024-01-01,2024-01-09,4822,Dongguan Yuli Wood Industry
+Arce,72,15,2024-02-20,2024-02-21,4960,Chengdu Jiashijia Decorative New Material
+Arce,44,39,2024-02-02,2024-02-07,4921,Chengdu Jiashijia Decorative New Material
+Roble,50,32,2024-01-07,2024-01-16,4866,Linyi Consmos Wood Industry
+Arce,21,6,2024-02-02,2024-02-09,4915,Chengdu Jiashijia Decorative New Material
+Abeto,71,41,2024-02-04,2024-02-12,4781,Dongguan Yuli Wood Industry
+Cedro,44,5,2024-02-04,2024-02-09,4976,Linyi Consmos Wood Industry
+Abeto,87,7,2024-01-01,2024-01-06,4774,Dongguan Yuli Wood Industry
+Roble,23,11,2024-01-27,2024-02-05,4855,Linyi Consmos Wood Industry
+Abeto,24,14,2024-02-29,2024-03-03,4760,Dongguan Yuli Wood Industry
+Abeto,61,36,2024-01-04,2024-01-09,4724,Dongguan Yuli Wood Industry
+Abeto,24,15,2024-01-29,2024-02-02,4709,Dongguan Yuli Wood Industry
+Tornillo,41,11,2024-02-28,2024-03-02,4897,Shandong Liwei Ma Wood Industry
+Cedro,37,6,2024-02-11,2024-02-20,4970,Linyi Consmos Wood Industry
+Tornillo,15,8,2024-01-30,2024-02-06,4889,Shandong Liwei Ma Wood Industry
+Nogal,98,66,2024-02-02,2024-02-03,4752,Chengdu Jiashijia Decorative New Material
+Caoba,36,34,2024-02-26,2024-03-01,4966,Shandong Liwei Ma Wood Industry
+Tornillo,12,11,2024-01-06,2024-01-14,4878,Shandong Liwei Ma Wood Industry
+Pino,18,9,2024-02-02,2024-02-05,4991,Dongguan Yuli Wood Industry
+Roble,53,28,2024-01-15,2024-01-21,4827,Linyi Consmos Wood Industry
+Arce,97,56,2024-02-18,2024-02-19,4859,Chengdu Jiashijia Decorative New Material
+Roble,61,16,2024-02-08,2024-02-10,4811,Linyi Consmos Wood Industry
+Pino,65,21,2024-02-28,2024-02-29,4970,Dongguan Yuli Wood Industry
+Roble,11,8,2024-02-23,2024-03-01,4803,Linyi Consmos Wood Industry
+Tornillo,10,7,2024-01-02,2024-01-07,4871,Shandong Liwei Ma Wood Industry
+Nogal,99,36,2024-01-06,2024-01-13,4716,Chengdu Jiashijia Decorative New Material
+Nogal,64,15,2024-02-25,2024-02-26,4701,Chengdu Jiashijia Decorative New Material
+Abeto,47,28,2024-01-05,2024-01-09,4681,Dongguan Yuli Wood Industry
+Roble,79,15,2024-02-17,2024-02-18,4788,Linyi Consmos Wood Industry
+Caoba,68,10,2024-01-16,2024-01-19,4956,Shandong Liwei Ma Wood Industry
+Nogal,68,40,2024-01-19,2024-01-22,4661,Chengdu Jiashijia Decorative New Material
+Abeto,28,24,2024-02-01,2024-02-08,4657,Dongguan Yuli Wood Industry
+Nogal,42,22,2024-02-09,2024-02-10,4639,Chengdu Jiashijia Decorative New Material
+Pino,66,29,2024-02-19,2024-02-26,4941,Dongguan Yuli Wood Industry
+Abeto,51,39,2024-01-07,2024-01-16,4618,Dongguan Yuli Wood Industry
+Nogal,69,53,2024-01-02,2024-01-03,4586,Chengdu Jiashijia Decorative New Material
+Arce,21,9,2024-02-06,2024-02-13,4850,Chengdu Jiashijia Decorative New Material
+Caoba,28,20,2024-01-16,2024-01-19,4936,Shandong Liwei Ma Wood Industry
+Nogal,33,26,2024-02-25,2024-02-26,4560,Chengdu Jiashijia Decorative New Material
+Arce,84,76,2024-02-05,2024-02-11,4774,Chengdu Jiashijia Decorative New Material
+Arce,93,29,2024-01-29,2024-01-31,4745,Chengdu Jiashijia Decorative New Material
+Arce,91,70,2024-02-23,2024-02-26,4675,Chengdu Jiashijia Decorative New Material
+Arce,70,45,2024-02-05,2024-02-06,4630,Chengdu Jiashijia Decorative New Material
+Nogal,42,18,2024-01-21,2024-01-25,4542,Chengdu Jiashijia Decorative New Material
+Arce,17,11,2024-01-03,2024-01-04,4619,Chengdu Jiashijia Decorative New Material
+Arce,42,16,2024-02-28,2024-03-02,4603,Chengdu Jiashijia Decorative New Material
+Cedro,31,18,2024-01-30,2024-02-05,4952,Linyi Consmos Wood Industry
+Cedro,60,58,2024-01-08,2024-01-10,4894,Linyi Consmos Wood Industry
+Tornillo,39,37,2024-01-28,2024-01-29,4834,Shandong Liwei Ma Wood Industry
+Tornillo,70,52,2024-01-19,2024-01-23,4782,Shandong Liwei Ma Wood Industry
+Pino,73,53,2024-01-17,2024-01-22,4888,Dongguan Yuli Wood Industry
+Cedro,46,28,2024-01-29,2024-01-30,4866,Linyi Consmos Wood Industry
+Cedro,62,35,2024-02-04,2024-02-05,4831,Linyi Consmos Wood Industry
+Nogal,72,36,2024-01-23,2024-01-24,4506,Chengdu Jiashijia Decorative New Material
+Arce,76,22,2024-01-25,2024-01-31,4581,Chengdu Jiashijia Decorative New Material
+Roble,76,50,2024-01-24,2024-01-26,4738,Linyi Consmos Wood Industry
+Arce,56,26,2024-01-23,2024-01-25,4555,Chengdu Jiashijia Decorative New Material
+Abeto,36,14,2024-01-02,2024-01-03,4604,Dongguan Yuli Wood Industry
+Arce,42,13,2024-02-12,2024-02-18,4542,Chengdu Jiashijia Decorative New Material
+Arce,48,33,2024-02-11,2024-02-18,4509,Chengdu Jiashijia Decorative New Material
+Roble,59,29,2024-01-24,2024-01-31,4709,Linyi Consmos Wood Industry
+Caoba,45,24,2024-01-01,2024-01-09,4912,Shandong Liwei Ma Wood Industry
+Arce,25,18,2024-01-12,2024-01-15,4491,Chengdu Jiashijia Decorative New Material
+Abeto,24,6,2024-01-02,2024-01-09,4598,Dongguan Yuli Wood Industry
+Abeto,95,55,2024-01-25,2024-01-31,4543,Dongguan Yuli Wood Industry
+Roble,67,26,2024-02-18,2024-02-22,4683,Linyi Consmos Wood Industry
+Roble,79,19,2024-02-23,2024-02-28,4664,Linyi Consmos Wood Industry
+Caoba,17,9,2024-02-29,2024-03-05,4903,Shandong Liwei Ma Wood Industry
+Abeto,77,10,2024-02-14,2024-02-18,4533,Dongguan Yuli Wood Industry
+Cedro,56,39,2024-02-24,2024-03-03,4792,Linyi Consmos Wood Industry
+Nogal,25,17,2024-02-19,2024-02-22,4489,Chengdu Jiashijia Decorative New Material
+Caoba,72,23,2024-01-28,2024-02-04,4880,Shandong Liwei Ma Wood Industry
+Roble,99,66,2024-01-23,2024-02-01,4598,Linyi Consmos Wood Industry
+Nogal,10,6,2024-02-27,2024-02-28,4483,Chengdu Jiashijia Decorative New Material
+Abeto,43,36,2024-02-23,2024-03-03,4497,Dongguan Yuli Wood Industry
+Arce,10,9,2024-02-08,2024-02-13,4482,Chengdu Jiashijia Decorative New Material
+Cedro,76,30,2024-01-16,2024-01-19,4762,Linyi Consmos Wood Industry
+Tornillo,95,61,2024-01-29,2024-02-03,4721,Shandong Liwei Ma Wood Industry
+Abeto,71,20,2024-01-26,2024-01-31,4477,Dongguan Yuli Wood Industry
