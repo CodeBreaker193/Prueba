@@ -1,13 +1,15 @@
-import tkinter as tk
-from tkinter import filedialog, ttk
+import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from joblib import load
 from datetime import timedelta
-from PIL import Image, ImageTk
 
+# Configuración inicial de Streamlit
+st.set_page_config(
+    page_title="Predicción de Indicadores Clave",
+    layout="wide",
+)
 
 # Variables globales
 modelo_stock = None
@@ -18,6 +20,11 @@ datos_filtrados_global = pd.DataFrame()
 modelo_stock = load("ModeloStockSeguridadV2.joblib") 
 modelo_servicio = load("ModeloNiveldeServicioV2.joblib")
 scaler = load("ScalerStockAjustado.joblib")
+
+# Títulos y descripción
+st.title("Predicción de Indicadores Clave")
+st.write("Aplicación para predecir stock de seguridad y nivel de servicio con modelos entrenados.")
+
 
 def calcular_fecha_limite(datos, predicciones_stock):
     """
@@ -63,94 +70,37 @@ def preprocesar_datos_combinados(datos, scaler):
         # Validar si las columnas requeridas existen
         for col in columnas_requeridas_stock + columnas_requeridas_servicio:
             if col not in datos.columns:
+                st.error(f"Falta la columna requerida: {col}")
                 raise ValueError(f"Falta la columna requerida: {col}")
 
         # Reordenar columnas para cada modelo
         datos_stock = datos[columnas_requeridas_stock].loc[:, ~datos[columnas_requeridas_stock].columns.duplicated()]
         datos_servicio = datos[columnas_requeridas_servicio]
 
-        # Confirmar el orden de las características
-        print("Columnas para modelo Stock de Seguridad:", datos_stock.columns.tolist())
-        print("Columnas para modelo Nivel de Servicio:", datos_servicio.columns.tolist())
+        # Mostrar mensajes en Streamlit
+        st.write("Columnas para modelo Stock de Seguridad:", datos_stock.columns.tolist())
+        st.write("Columnas para modelo Nivel de Servicio:", datos_servicio.columns.tolist())
 
         return datos_stock, datos_servicio
 
     except Exception as e:
-        print(f"Error en preprocesar_datos_combinados: {e}")
+        st.error(f"Error en preprocesar_datos_combinados: {e}")
         return None, None
 
 def aplicar_filtros(datos, producto):
     """
     Aplica el filtro por Producto al DataFrame.
     """
-    if producto != "Todos":
-        datos = datos[datos['Producto'] == producto]
-    return datos
-
-
-
     try:
-        # Cargar datos desde el archivo
-        datos = pd.read_csv(archivo)
-
-        # Preprocesar los datos
-        datos_stock, datos_servicio = preprocesar_datos_combinados(datos, scaler)
-
-        # Validar si el preprocesamiento devolvió valores
-        if datos_stock is None or datos_servicio is None:
-            raise ValueError("El preprocesamiento no devolvió datos válidos.")
-
-        # Realizar predicciones
-        predicciones_stock = modelo_stock.predict(datos_stock)
-        predicciones_servicio = modelo_servicio.predict(datos_servicio)
-
-        # Agregar predicciones al DataFrame original
-        datos['Predicción Stock de Seguridad'] = predicciones_stock
-        datos['Predicción Nivel de Servicio'] = predicciones_servicio
-
-        # Ajustar y limitar el Nivel de Servicio
-        datos['Predicción Nivel de Servicio'] = (datos['Predicción Nivel de Servicio'] * 1.5).clip(upper=100)
-
-        # Clasificar Nivel de Servicio
-        datos['Predicción Nivel de Servicio'] = pd.to_numeric(datos['Predicción Nivel de Servicio'], errors='coerce')
-        datos['Predicción Nivel de Servicio'] = datos['Predicción Nivel de Servicio'].fillna(0)
-        datos['Clasificación Nivel de Servicio'] = datos['Predicción Nivel de Servicio'].apply(clasificar_nivel_servicio)
-
-        # Aplicar filtro por producto si es necesario
         if producto != "Todos":
             datos = datos[datos['Producto'] == producto]
-
-        # Llenar la tabla con datos agrupados
-        datos_agrupados = datos.groupby('Producto', as_index=False).first()
-
-        # Actualizar gráficas con datos filtrados
-        actualizar_graficas(
-            canvas1,
-            datos_agrupados['Predicción Stock de Seguridad'].tolist(),
-            "Predicción de Stock de Seguridad",
-            etiquetas=datos_agrupados['Producto'].tolist()  # Etiquetas con nombres de productos
-        )
-        actualizar_graficas(
-            canvas2,
-            datos_agrupados['Predicción Nivel de Servicio'].tolist(),
-            "Predicción de Nivel de Servicio",
-            etiquetas=datos_agrupados['Producto'].tolist()  # Etiquetas con nombres de productos
-        )
-        actualizar_grafico_proveedor_producto(canvas_proveedor_producto, datos)
-
-        # Llenar tabla con datos únicos por producto
-        llenar_tabla(tabla, datos_agrupados)
-
-        # Guardar resultados
-        datos.to_csv("resultados_predicciones.csv", index=False)
-        print("Predicciones guardadas en: resultados_predicciones.csv")
-
-    except ValueError as ve:
-        print(f"Error de validación: {ve}")
+        return datos
     except Exception as e:
-        print(f"Error inesperado: {e}")
+        st.error(f"Error al aplicar el filtro: {e}")
+        return pd.DataFrame()  # Retornar un DataFrame vacío en caso de error
 
-def realizar_predicciones(archivo, producto, canvas1, canvas2, canvas_proveedor_producto, tabla):
+
+def realizar_predicciones(archivo, producto):
     """
     Realiza predicciones con los modelos entrenados y actualiza las gráficas y la tabla de resultados.
     """
@@ -163,7 +113,8 @@ def realizar_predicciones(archivo, producto, canvas1, canvas2, canvas_proveedor_
 
         # Validar si el preprocesamiento devolvió valores
         if datos_stock is None or datos_servicio is None:
-            raise ValueError("El preprocesamiento no devolvió datos válidos.")
+            st.error("El preprocesamiento no devolvió datos válidos.")
+            return None
 
         # Realizar predicciones
         predicciones_stock = modelo_stock.predict(datos_stock)
@@ -197,40 +148,31 @@ def realizar_predicciones(archivo, producto, canvas1, canvas2, canvas_proveedor_
         if producto != "Todos":
             datos = datos[datos['Producto'] == producto]
 
-        # Llenar la tabla con datos agrupados
-        datos_agrupados = datos.groupby('Producto', as_index=False).first()
+        # Mostrar los resultados en Streamlit
+        st.subheader("Tabla de Resultados")
+        st.write(datos)
 
-        # Actualizar gráficas con datos filtrados
-        actualizar_graficas(
-            canvas1,
-            datos_agrupados['Predicción Stock de Seguridad'].tolist(),
-            "Predicción de Stock de Seguridad",
-            etiquetas=datos_agrupados['Producto'].tolist()  # Etiquetas con nombres de productos
-        )
-        actualizar_graficas(
-            canvas2,
-            datos_agrupados['Predicción Nivel de Servicio'].tolist(),
-            "Predicción de Nivel de Servicio",
-            etiquetas=datos_agrupados['Producto'].tolist()  # Etiquetas con nombres de productos
-        )
-        actualizar_grafico_proveedor_producto(canvas_proveedor_producto, datos)
-
-        # Llenar tabla con datos únicos por producto
-        llenar_tabla(tabla, datos_agrupados)
+        # Generar gráficos
+        st.subheader("Gráficos")
+        st.line_chart(datos[['Fecha de Pedido', 'Stock Actual', 'Predicción Stock de Seguridad']].set_index('Fecha de Pedido'))
+        st.line_chart(datos[['Fecha de Pedido', 'Cantidad Entregada', 'Predicción Nivel de Servicio']].set_index('Fecha de Pedido'))
 
         # Guardar resultados
         datos.to_csv("resultados_predicciones.csv", index=False)
-        print("Predicciones guardadas en: resultados_predicciones.csv")
+        st.success("Predicciones guardadas en: resultados_predicciones.csv")
 
         return datos  # Devolver datos procesados y predicciones
 
     except ValueError as ve:
-        print(f"Error de validación: {ve}")
+        st.error(f"Error de validación: {ve}")
     except Exception as e:
-        print(f"Error inesperado: {e}")
+        st.error(f"Error inesperado: {e}")
         return None
 
 def clasificar_nivel_servicio(nivel):
+    """
+    Clasifica el nivel de servicio según su porcentaje.
+    """
     if nivel >= 90:
         return "Excelente"
     elif nivel >= 75:
@@ -240,16 +182,18 @@ def clasificar_nivel_servicio(nivel):
     else:
         return "Deficiente"
 
-def actualizar_grafico_proveedor_producto(canvas, datos):
+def actualizar_grafico_proveedor_producto(datos):
     """
-    Actualiza el gráfico de relación Proveedor-Producto.
+    Actualiza el gráfico de relación Proveedor-Producto para ser utilizado en Streamlit.
     """
     try:
+        import matplotlib.pyplot as plt
+
         # Abreviar nombres de proveedores
         datos['Proveedor Corto'] = datos['Proveedor'].apply(lambda x: x.split()[0])  # Usa solo la primera palabra
 
         # Crear la figura y el eje
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 6))  # Ajustar el tamaño del gráfico
 
         # Crear gráfico de barras apiladas
         datos.groupby(['Proveedor Corto', 'Producto']).size().unstack().plot(kind='bar', stacked=True, ax=ax)
@@ -262,23 +206,28 @@ def actualizar_grafico_proveedor_producto(canvas, datos):
         # Ajustar la leyenda
         ax.legend(title="Producto", loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3)
 
-        # Actualizar el canvas con la figura
-        canvas.figure = fig
-        canvas.draw()
+        # Mostrar la figura en Streamlit
+        import streamlit as st
+        st.pyplot(fig)
 
     except Exception as e:
-        print(f"Error en actualizar_grafico_proveedor_producto: {e}")
+        import streamlit as st
+        st.error(f"Error en actualizar_grafico_proveedor_producto: {e}")
 
-def actualizar_graficas(canvas, datos, titulo, etiquetas=None):
+def actualizar_graficas(datos, titulo, etiquetas=None):
     """
     Actualiza las gráficas con datos predichos, usando etiquetas más representativas si están disponibles.
+    Compatible con Streamlit.
     """
+    import matplotlib.pyplot as plt
+    import streamlit as st
+
     if len(datos) == 0:
-        print(f"No hay datos para generar la gráfica: {titulo}")
+        st.warning(f"No hay datos para generar la gráfica: {titulo}")
         return
 
     # Crear la figura
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 5))  # Ajustar tamaño de la gráfica
 
     # Generar la gráfica
     ax.plot(range(len(datos)), datos, marker="o")
@@ -296,24 +245,43 @@ def actualizar_graficas(canvas, datos, titulo, etiquetas=None):
     ax.set_ylabel("Valor")
 
     # Ajustar márgenes y espaciamiento
-    plt.subplots_adjust(bottom=0.3)  # Aumentar el espacio inferior para las etiquetas rotadas
+    fig.tight_layout()
 
-    # Dibujar en el canvas
-    canvas.figure = fig
-    canvas.draw()
+    # Mostrar la gráfica en Streamlit
+    st.pyplot(fig)
 
-def actualizar_graficas_principal(archivo, producto, modo, canvas1, canvas2, canvas_proveedor_producto, tabla):
+def actualizar_graficas_principal(archivo, producto, modo):
     """
-    Actualiza las gráficas dependiendo del modo seleccionado.
+    Actualiza las gráficas dependiendo del modo seleccionado para Streamlit.
     """
-    datos = realizar_predicciones(archivo, producto, canvas1, canvas2, canvas_proveedor_producto, tabla)
+    # Realizar las predicciones y obtener los datos procesados
+    datos = realizar_predicciones(archivo, producto)
+    
     if datos is not None:
         if modo == "Comparativo":
-            graficar_comparativo(datos, canvas1, canvas2)
+            # Generar gráficas comparativas
+            st.subheader("Gráfica Comparativa: Actual vs Predicción")
+            col1, col2 = st.columns(2)  # Dividir en dos columnas para mostrar ambas gráficas lado a lado
+            with col1:
+                graficar_comparativo(datos, tipo="Stock de Seguridad")
+            with col2:
+                graficar_comparativo(datos, tipo="Nivel de Servicio")
         elif modo == "Individual":
-            print("Modo individual ya manejado en realizar_predicciones")
+            # Mostrar mensaje sobre modo individual (gráficas ya renderizadas en realizar_predicciones)
+            st.subheader("Gráficas Individuales: Predicción de Indicadores")
+            actualizar_graficas(
+                datos['Predicción Stock de Seguridad'].tolist(),
+                titulo="Predicción de Stock de Seguridad",
+                etiquetas=datos['Producto'].tolist()
+            )
+            actualizar_graficas(
+                datos['Predicción Nivel de Servicio'].tolist(),
+                titulo="Predicción de Nivel de Servicio",
+                etiquetas=datos['Producto'].tolist()
+            )
 
-def graficar_comparativo(datos, canvas1, canvas2):
+
+def graficar_comparativo(datos, tipo):
     """
     Genera gráficas comparativas de datos históricos vs predicción con dimensiones ajustadas.
     """
@@ -323,7 +291,7 @@ def graficar_comparativo(datos, canvas1, canvas2):
                                'Cantidad Entregada', 'Cantidad Pedida', 'Predicción Nivel de Servicio']
         for columna in columnas_requeridas:
             if columna not in datos.columns:
-                print(f"Error: Falta la columna requerida '{columna}' en los datos.")
+                st.error(f"Error: Falta la columna requerida '{columna}' en los datos.")
                 return
 
         # Ordenar datos por fecha
@@ -332,124 +300,142 @@ def graficar_comparativo(datos, canvas1, canvas2):
         # Formatear fechas para simplificar etiquetas
         datos['Fecha Formateada'] = datos['Fecha de Pedido'].dt.strftime('%m-%d')
 
-        # Gráfico de Stock de Seguridad
-        fig1, ax1 = plt.subplots(figsize=(6, 5))  # Ajustar proporciones: menos ancho y menos alto
-        ax1.plot(datos['Fecha Formateada'], datos['Stock Actual'], label="Actual", color="blue")
-        ax1.plot(datos['Fecha Formateada'], datos['Predicción Stock de Seguridad'], label="Predicción", linestyle="--", color="orange")
-        ax1.set_title("Stock de Seguridad: Actual vs Predicción")
-        ax1.set_xlabel("Fecha")
-        ax1.set_ylabel("Cantidad")
-        ax1.legend(loc="upper right")  # Posición ajustada de la leyenda
+        # Selección del gráfico según el tipo
+        if tipo == "Stock de Seguridad":
+            fig, ax = plt.subplots(figsize=(6, 5))  # Ajustar proporciones: menos ancho y menos alto
+            ax.plot(datos['Fecha Formateada'], datos['Stock Actual'], label="Actual", color="blue")
+            ax.plot(datos['Fecha Formateada'], datos['Predicción Stock de Seguridad'], label="Predicción", linestyle="--", color="orange")
+            ax.set_title("Stock de Seguridad: Actual vs Predicción")
+            ax.set_xlabel("Fecha")
+            ax.set_ylabel("Cantidad")
+            ax.legend(loc="upper right")  # Posición ajustada de la leyenda
+
+        elif tipo == "Nivel de Servicio":
+            fig, ax = plt.subplots(figsize=(6, 5))  # Ajustar proporciones: menos ancho y menos alto
+            nivel_actual = (datos['Cantidad Entregada'] / datos['Cantidad Pedida']) * 100  # Calcular nivel de servicio actual
+            ax.plot(datos['Fecha Formateada'], nivel_actual, label="Actual", color="blue")
+            ax.plot(datos['Fecha Formateada'], datos['Predicción Nivel de Servicio'], label="Predicción", linestyle="--", color="orange")
+            ax.set_title("Nivel de Servicio: Actual vs Predicción")
+            ax.set_xlabel("Fecha")
+            ax.set_ylabel("Porcentaje")
+            ax.legend(loc="upper right")  # Posición ajustada de la leyenda
 
         # Ajustar densidad de etiquetas en el eje X
         step = max(1, len(datos) // 10)
-        ax1.set_xticks(datos['Fecha Formateada'][::step])
-        ax1.tick_params(axis='x', rotation=45, labelsize=8)  # Rotar y reducir tamaño de las etiquetas
-        fig1.tight_layout()
+        ax.set_xticks(datos['Fecha Formateada'][::step])
+        ax.tick_params(axis='x', rotation=45, labelsize=8)  # Rotar y reducir tamaño de las etiquetas
+        fig.tight_layout()
 
-        canvas1.figure = fig1
-        canvas1.draw()
-
-        # Gráfico de Nivel de Servicio
-        fig2, ax2 = plt.subplots(figsize=(6, 5))  # Ajustar proporciones: menos ancho y menos alto
-        nivel_actual = (datos['Cantidad Entregada'] / datos['Cantidad Pedida']) * 100  # Calcular nivel de servicio actual
-        ax2.plot(datos['Fecha Formateada'], nivel_actual, label="Actual", color="blue")
-        ax2.plot(datos['Fecha Formateada'], datos['Predicción Nivel de Servicio'], label="Predicción", linestyle="--", color="orange")
-        ax2.set_title("Nivel de Servicio: Actual vs Predicción")
-        ax2.set_xlabel("Fecha")
-        ax2.set_ylabel("Porcentaje")
-        ax2.legend(loc="upper right")  # Posición ajustada de la leyenda
-
-        # Ajustar densidad de etiquetas en el eje X
-        ax2.set_xticks(datos['Fecha Formateada'][::step])
-        ax2.tick_params(axis='x', rotation=45, labelsize=8)  # Rotar y reducir tamaño de las etiquetas
-        fig2.tight_layout()
-
-        canvas2.figure = fig2
-        canvas2.draw()
+        # Mostrar gráfico en Streamlit
+        st.pyplot(fig)
 
     except Exception as e:
-        print(f"Error en graficar_comparativo: {e}")
+        st.error(f"Error en graficar_comparativo: {e}")
 
-def llenar_tabla(tabla, datos):
+
+def mostrar_tabla(datos):
     """
-    Llena la tabla con los datos procesados.
+    Muestra los datos procesados como una tabla en Streamlit.
     """
-    for row in tabla.get_children():
-        tabla.delete(row)
+    try:
+        # Preparar los datos para la tabla
+        tabla = datos[['Producto', 
+                       'Predicción Stock de Seguridad', 
+                       'Predicción Nivel de Servicio', 
+                       'Fecha de Pedido', 
+                       'Clasificación Nivel de Servicio']].copy()
 
-    for _, row in datos.iterrows():
-        tabla.insert("", "end", values=(
-            row['Producto'],
-            f"{row['Predicción Stock de Seguridad']:.2f}",
-            f"{row['Predicción Nivel de Servicio']:.2f}%",
-            row['Fecha de Pedido'].strftime('%Y-%m-%d'),
-            row['Clasificación Nivel de Servicio']
-        ))
+        # Formatear las columnas
+        tabla['Predicción Stock de Seguridad'] = tabla['Predicción Stock de Seguridad'].apply(lambda x: f"{x:.2f}")
+        tabla['Predicción Nivel de Servicio'] = tabla['Predicción Nivel de Servicio'].apply(lambda x: f"{x:.2f}%")
+        tabla['Fecha de Pedido'] = tabla['Fecha de Pedido'].dt.strftime('%Y-%m-%d')
 
-def actualizar_tabla(tabla, datos):
+        # Mostrar la tabla en Streamlit
+        st.dataframe(tabla, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Error al mostrar la tabla: {e}")
+
+
+def actualizar_tabla_streamlit(datos):
     """
-    Actualiza la tabla con los datos procesados.
+    Actualiza y muestra los datos procesados como tabla en Streamlit.
     """
-    # Limpia la tabla existente
-    for item in tabla.get_children():
-        tabla.delete(item)
+    try:
+        # Validar datos
+        columnas_necesarias = ['Producto', 
+                               'Predicción Stock de Seguridad', 
+                               'Predicción Nivel de Servicio', 
+                               'Fecha Límite Pedido', 
+                               'Clasificación Nivel de Servicio']
+        for columna in columnas_necesarias:
+            if columna not in datos.columns:
+                st.error(f"Error: La columna necesaria '{columna}' no está disponible en los datos.")
+                return
 
-    # Validar datos
-    if 'Producto' not in datos.columns or 'Predicción Stock de Seguridad' not in datos.columns:
-        print("Error: Las columnas necesarias no están disponibles en los datos.")
-        return
+        # Preparar datos para la tabla
+        datos_tabla = datos.copy()
+        datos_tabla['Predicción Nivel de Servicio'] = datos_tabla['Predicción Nivel de Servicio'].apply(lambda x: f"{x:.2f}%")
+        datos_tabla['Fecha Límite Pedido'] = datos_tabla['Fecha Límite Pedido'].dt.strftime('%Y-%m-%d')
 
-    # Llenar la tabla con los datos
-    for _, row in datos.iterrows():
+        # Mostrar tabla en Streamlit
+        st.dataframe(datos_tabla[columnas_necesarias], use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Error al actualizar la tabla: {e}")
+
+
+def seleccionar_archivo_streamlit(canvas1, canvas2, canvas_proveedor_producto, tabla):
+    """
+    Permite al usuario cargar un archivo y ejecuta las predicciones.
+    """
+    st.subheader("Carga de Archivo para Predicciones")
+    archivo = st.file_uploader("Selecciona un archivo CSV", type=["csv"])
+
+    if archivo is not None:
         try:
-            tabla.insert("", "end", values=(
-                row['Producto'],
-                row['Predicción Stock de Seguridad'],
-                f"{row['Predicción Nivel de Servicio']:.2f}%",
-                row['Fecha Límite Pedido'].strftime("%Y-%m-%d"),
-                row['Clasificación Nivel de Servicio']
-            ))
+            # Leer el archivo cargado
+            datos = pd.read_csv(archivo)
+
+            # Ejecutar las predicciones
+            st.success("Archivo cargado con éxito. Realizando predicciones...")
+            realizar_predicciones(datos, "Todos", canvas1, canvas2, canvas_proveedor_producto, tabla)
+
         except Exception as e:
-            print(f"Error al agregar fila a la tabla: {e}")
-
-def seleccionar_archivo(entry, canvas1, canvas2):
-    """
-    Permite al usuario seleccionar un archivo y ejecuta las predicciones.
-    """
-    archivo = filedialog.askopenfilename(filetypes=[("Archivos CSV", "*.csv")])
-    if archivo:
-        entry.delete(0, tk.END)
-        entry.insert(0, archivo)
-        realizar_predicciones(archivo, canvas1, canvas2)
+            st.error(f"Error al procesar el archivo: {e}")
     else:
-        print("No se seleccionó ningún archivo.")
+        st.warning("Por favor, selecciona un archivo CSV.")
 
-def exportar_datos():
+import streamlit as st
+import pandas as pd
+
+def exportar_datos_streamlit(datos_filtrados_global):
     """
-    Exporta los datos filtrados en un archivo CSV.
+    Exporta los datos filtrados en un archivo CSV desde Streamlit.
     """
-    global datos_filtrados_global
     if datos_filtrados_global.empty:
-        print("No hay datos filtrados para exportar.")
+        st.warning("No hay datos filtrados para exportar.")
         return
 
-    archivo = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("Archivos CSV", "*.csv")])
-    if archivo:
-        datos_filtrados_global.to_csv(archivo, index=False)
-        print(f"Datos exportados exitosamente a {archivo}")
+    st.subheader("Exportar Datos Filtrados")
+    st.download_button(
+        label="Exportar Datos a CSV",
+        data=datos_filtrados_global.to_csv(index=False),
+        file_name="datos_filtrados.csv",
+        mime="text/csv"
+    )
 
-def aplicar_y_actualizar(archivo, producto, proveedor, canvas1, canvas2, tabla):
+
+def aplicar_y_actualizar_streamlit(archivo, producto, proveedor, datos_filtrados_global, modelo_stock, modelo_servicio, scaler):
     """
     Aplica los filtros seleccionados, genera las predicciones si es necesario,
-    y actualiza las gráficas y la tabla de resultados.
+    y actualiza las gráficas y la tabla de resultados en Streamlit.
     """
-    global datos_filtrados_global
-
     try:
         # Verificar si se cargó un archivo
-        if not archivo:
-            raise ValueError("No se ha seleccionado ningún archivo.")
+        if archivo is None:
+            st.warning("No se ha cargado ningún archivo.")
+            return datos_filtrados_global
 
         # Cargar los datos desde el archivo
         datos = pd.read_csv(archivo)
@@ -459,139 +445,170 @@ def aplicar_y_actualizar(archivo, producto, proveedor, canvas1, canvas2, tabla):
                                'Fecha de Pedido', 'Fecha de Recepción', 'Stock Actual', 'Proveedor']
         for col in columnas_requeridas:
             if col not in datos.columns:
-                raise ValueError(f"El archivo cargado no contiene la columna requerida: {col}")
+                st.error(f"El archivo cargado no contiene la columna requerida: {col}")
+                return datos_filtrados_global
 
         # Generar predicciones si no existen
         if 'Predicción Stock de Seguridad' not in datos.columns or 'Predicción Nivel de Servicio' not in datos.columns:
-            datos_stock, datos_servicio = preprocesar_datos_combinados(datos)
+            datos_stock, datos_servicio = preprocesar_datos_combinados(datos, scaler)
             datos['Predicción Stock de Seguridad'] = modelo_stock.predict(datos_stock)
             datos['Predicción Nivel de Servicio'] = modelo_servicio.predict(datos_servicio)
 
         # Filtrar los datos según los criterios seleccionados
-        datos_filtrados = aplicar_filtros(datos, producto, proveedor)
+        datos_filtrados = datos.copy()
+        if producto != "Todos":
+            datos_filtrados = datos_filtrados[datos_filtrados['Producto'] == producto]
+        if proveedor != "Todos":
+            datos_filtrados = datos_filtrados[datos_filtrados['Proveedor'] == proveedor]
 
         # Verificar si hay datos después de aplicar los filtros
         if datos_filtrados.empty:
-            print("No hay datos que coincidan con los filtros seleccionados.")
-            datos_filtrados_global = pd.DataFrame()  # Resetear los datos filtrados
-            actualizar_tabla(tabla, datos_filtrados_global)
-            return
+            st.warning("No hay datos que coincidan con los filtros seleccionados.")
+            return pd.DataFrame()  # Retornar un DataFrame vacío
 
-        # Guardar los datos filtrados para exportar
-        datos_filtrados_global = datos_filtrados
+        # Actualizar la tabla en Streamlit
+        st.subheader("Resultados Filtrados")
+        st.dataframe(datos_filtrados)
 
-        # Actualizar gráficas
-        actualizar_graficas(canvas1, canvas2, datos_filtrados)
+        # Actualizar gráficas en Streamlit
+        st.subheader("Gráficas")
+        col1, col2 = st.columns(2)
 
-        # Actualizar la tabla
-        actualizar_tabla(tabla, datos_filtrados)
+        with col1:
+            st.write("**Stock de Seguridad: Actual vs Predicción**")
+            fig1, ax1 = plt.subplots()
+            ax1.plot(datos_filtrados['Fecha de Pedido'], datos_filtrados['Stock Actual'], label="Actual")
+            ax1.plot(datos_filtrados['Fecha de Pedido'], datos_filtrados['Predicción Stock de Seguridad'], label="Predicción", linestyle="--")
+            ax1.legend()
+            st.pyplot(fig1)
 
-    except ValueError as ve:
-        print(f"Error: {ve}")
+        with col2:
+            st.write("**Nivel de Servicio: Actual vs Predicción**")
+            fig2, ax2 = plt.subplots()
+            nivel_actual = (datos_filtrados['Cantidad Entregada'] / datos_filtrados['Cantidad Pedida']) * 100
+            ax2.plot(datos_filtrados['Fecha de Pedido'], nivel_actual, label="Actual")
+            ax2.plot(datos_filtrados['Fecha de Pedido'], datos_filtrados['Predicción Nivel de Servicio'], label="Predicción", linestyle="--")
+            ax2.legend()
+            st.pyplot(fig2)
+
+        # Retornar los datos filtrados para exportar
+        return datos_filtrados
+
     except FileNotFoundError:
-        print("Error: El archivo especificado no existe.")
+        st.error("El archivo especificado no existe.")
     except Exception as e:
-        print(f"Error inesperado: {e}")
+        st.error(f"Error inesperado: {e}")
+        return pd.DataFrame()
 
-def crear_interfaz():
+def crear_interfaz_streamlit():
     """
-    Crea la interfaz gráfica con filtros, gráficas y resultados.
+    Crea la interfaz gráfica con filtros, gráficas y resultados usando Streamlit.
     """
-    root = tk.Tk()
-    root.title("Predicción de Indicadores Clave")
-    root.geometry("1400x850")  # Ajuste de altura para dar más espacio a las gráficas
+    st.title("Predicción de Indicadores Clave")
 
-    # Espacio para el banner de la empresa
-    banner_frame = tk.Frame(root, bg="black")
-    banner_frame.pack(fill="x", pady=5)
+    # Banner con el logo de la empresa
+    st.image("1d.png", use_column_width=True)
 
-    # Logo de la empresa
-    logo_image = Image.open("1d.png")  # Asegúrate de que el archivo esté en el mismo directorio
-    logo_image = logo_image.resize((1400, 80), Image.LANCZOS)  # Ajustar tamaño completo
-    logo = ImageTk.PhotoImage(logo_image)
-    logo_label = tk.Label(banner_frame, image=logo, bg="black")
-    logo_label.image = logo  # Guardar referencia
-    logo_label.pack(side="left", fill="both", expand=True)
+    # Cargar archivo
+    st.sidebar.header("Cargar archivo")
+    archivo_cargado = st.sidebar.file_uploader("Selecciona un archivo CSV o Excel", type=["csv", "xlsx"])
 
-    # Título del banner
-    banner_label = tk.Label(banner_frame, text="Predicción de Indicadores Clave", bg="black", fg="white", font=("Arial", 16))
-    banner_label.pack(side="left", padx=10)
+    if archivo_cargado:
+        try:
+            # Leer archivo cargado
+            if archivo_cargado.name.endswith(".csv"):
+                datos = pd.read_csv(archivo_cargado)
+            else:
+                datos = pd.read_excel(archivo_cargado)
 
-    # Selección de archivo
-    archivo_frame = tk.Frame(root)
-    archivo_frame.pack(pady=10)
+            st.sidebar.success(f"Archivo cargado: {archivo_cargado.name}")
+        except Exception as e:
+            st.sidebar.error(f"Error al cargar el archivo: {e}")
+            return
+    else:
+        st.sidebar.warning("Por favor, carga un archivo para continuar.")
+        return
 
-    tk.Label(archivo_frame, text="Cargar archivo (Excel o CSV):").pack(side="left", padx=5)
-    archivo_entry = tk.Entry(archivo_frame, width=50)
-    archivo_entry.pack(side="left", padx=5)
+    # Filtros
+    st.sidebar.header("Filtros")
+    productos = ["Todos"] + datos["Producto"].unique().tolist()
+    producto_seleccionado = st.sidebar.selectbox("Selecciona un producto", productos)
 
-    def seleccionar_archivo():
-        archivo = filedialog.askopenfilename(filetypes=[("Archivos CSV", "*.csv"), ("Archivos Excel", "*.xlsx")])
-        if archivo:
-            archivo_entry.delete(0, tk.END)
-            archivo_entry.insert(0, archivo)
+    modos = ["Individual", "Comparativo"]
+    modo_seleccionado = st.sidebar.selectbox("Selecciona el modo de visualización", modos)
 
-    archivo_boton = tk.Button(archivo_frame, text="Seleccionar Archivo", command=seleccionar_archivo)
-    archivo_boton.pack(side="left", padx=5)
+    # Aplicar predicciones y visualizar
+    if st.sidebar.button("Aplicar Predicciones"):
+        try:
+            # Preprocesar datos y realizar predicciones
+            datos_filtrados = datos.copy()
+            if producto_seleccionado != "Todos":
+                datos_filtrados = datos_filtrados[datos_filtrados['Producto'] == producto_seleccionado]
 
-    # Filtro de producto
-    filtros_frame = tk.Frame(root)
-    filtros_frame.pack(pady=10)
+            datos_filtrados = realizar_predicciones_streamlit(datos_filtrados)
 
-    tk.Label(filtros_frame, text="Producto:").grid(row=0, column=0, padx=5)
-    producto_combo = ttk.Combobox(filtros_frame, values=["Todos", "Caoba", "Cedro", "Tornillo", "Nogal", "Abeto", "Roble", "Arce", "Pino"], width=20)
-    producto_combo.grid(row=0, column=1, padx=5)
-    producto_combo.set("Todos")
+            # Mostrar gráficas según el modo seleccionado
+            if modo_seleccionado == "Comparativo":
+                st.subheader("Gráficas Comparativas")
+                graficar_comparativo_streamlit(datos_filtrados)
+            else:
+                st.subheader("Gráficas Individuales")
+                mostrar_graficas_individuales(datos_filtrados)
 
-    # Combobox para seleccionar tipo de gráfico
-    tk.Label(filtros_frame, text="Visualización:").grid(row=0, column=2, padx=5)
-    modo_combo = ttk.Combobox(filtros_frame, values=["Individual", "Comparativo"], width=20)
-    modo_combo.grid(row=0, column=3, padx=5)
-    modo_combo.set("Individual")
+            # Mostrar tabla
+            st.subheader("Tabla de Resultados")
+            st.dataframe(datos_filtrados)
 
-    # Botón para aplicar predicciones
-    aplicar_boton = tk.Button(
-        filtros_frame,
-        text="Aplicar Predicciones",
-        command=lambda: actualizar_graficas_principal(
-            archivo_entry.get(),
-            producto_combo.get(),
-            modo_combo.get(),
-            canvas1,
-            canvas2,
-            canvas_proveedor_producto,
-            tabla
-        ),
-    )
-    aplicar_boton.grid(row=0, column=4, padx=5)
+        except Exception as e:
+            st.error(f"Error al aplicar predicciones: {e}")
 
-    # Gráficas
-    graficas_frame = tk.Frame(root)
-    graficas_frame.pack(fill="both", expand=True, pady=10)
+def realizar_predicciones_streamlit(datos):
+    """
+    Realiza predicciones y ajusta los datos con los modelos entrenados.
+    """
+    datos_stock, datos_servicio = preprocesar_datos_combinados(datos, scaler)
 
-    canvas1 = FigureCanvasTkAgg(plt.figure(), master=graficas_frame)
-    canvas1.get_tk_widget().grid(row=0, column=0, padx=10, pady=10)
+    datos['Predicción Stock de Seguridad'] = modelo_stock.predict(datos_stock)
+    datos['Predicción Nivel de Servicio'] = modelo_servicio.predict(datos_servicio)
 
-    canvas2 = FigureCanvasTkAgg(plt.figure(), master=graficas_frame)
-    canvas2.get_tk_widget().grid(row=0, column=1, padx=10, pady=10)
+    # Ajustar y limitar valores
+    datos['Predicción Nivel de Servicio'] = (datos['Predicción Nivel de Servicio'] * 1.5).clip(upper=100)
 
-    canvas_proveedor_producto = FigureCanvasTkAgg(plt.figure(), master=graficas_frame)
-    canvas_proveedor_producto.get_tk_widget().grid(row=0, column=2, padx=10, pady=10, rowspan=2)
+    return datos
 
-    # Tabla de resultados
-    tabla_frame = tk.Frame(root)
-    tabla_frame.pack(fill="x", pady=5)
+def graficar_comparativo_streamlit(datos):
+    """
+    Genera gráficos comparativos de datos históricos vs predicción.
+    """
+    fig1, ax1 = plt.subplots()
+    ax1.plot(datos['Fecha de Pedido'], datos['Stock Actual'], label="Actual")
+    ax1.plot(datos['Fecha de Pedido'], datos['Predicción Stock de Seguridad'], label="Predicción", linestyle="--")
+    ax1.set_title("Stock de Seguridad: Actual vs Predicción")
+    ax1.legend()
+    st.pyplot(fig1)
 
-    columnas = ["Producto", "Predicción Stock de Seguridad", "Predicción Nivel de Servicio",
-                "Fecha Límite Pedido", "Clasificación Nivel de Servicio"]
-    tabla = ttk.Treeview(tabla_frame, columns=columnas, show="headings")
-    for col in columnas:
-        tabla.heading(col, text=col)
-        tabla.column(col, width=150)
-    tabla.pack(fill="x", padx=10, pady=5)
+    fig2, ax2 = plt.subplots()
+    nivel_actual = (datos['Cantidad Entregada'] / datos['Cantidad Pedida']) * 100
+    ax2.plot(datos['Fecha de Pedido'], nivel_actual, label="Actual")
+    ax2.plot(datos['Fecha de Pedido'], datos['Predicción Nivel de Servicio'], label="Predicción", linestyle="--")
+    ax2.set_title("Nivel de Servicio: Actual vs Predicción")
+    ax2.legend()
+    st.pyplot(fig2)
 
-    root.mainloop()
+def mostrar_graficas_individuales(datos):
+    """
+    Muestra las gráficas individuales de predicción.
+    """
+    fig1, ax1 = plt.subplots()
+    ax1.plot(range(len(datos)), datos['Predicción Stock de Seguridad'], marker="o")
+    ax1.set_title("Predicción de Stock de Seguridad")
+    st.pyplot(fig1)
 
-# Ejecutar la interfaz
+    fig2, ax2 = plt.subplots()
+    ax2.plot(range(len(datos)), datos['Predicción Nivel de Servicio'], marker="o")
+    ax2.set_title("Predicción de Nivel de Servicio")
+    st.pyplot(fig2)
+
+# Ejecutar en Streamlit
 if __name__ == "__main__":
-    crear_interfaz()
+    crear_interfaz_streamlit()
