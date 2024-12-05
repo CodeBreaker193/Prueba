@@ -230,7 +230,6 @@ def realizar_predicciones(archivo, producto, canvas1, canvas2, canvas_proveedor_
         print(f"Error inesperado: {e}")
         return None
 
-
 def clasificar_nivel_servicio(nivel):
     if nivel >= 90:
         return "Excelente"
@@ -371,7 +370,6 @@ def graficar_comparativo(datos, canvas1, canvas2):
 
     except Exception as e:
         print(f"Error en graficar_comparativo: {e}")
-
 
 def llenar_tabla(tabla, datos):
     """
